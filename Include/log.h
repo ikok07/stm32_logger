@@ -2,8 +2,8 @@
 // Created by Kok on 1/29/26.
 //
 
-#ifndef LOG_H
-#define LOG_H
+#ifndef STM32_LOG_H
+#define STM32_LOG_H
 
 #include <stdint.h>
 
@@ -42,6 +42,13 @@ typedef struct {
      * @brief Log basic information using peripherals configured with LOGGER_InitBasicCB()
      */
     void (*on_log_basic)();
+
+    /**
+     * @brief Handle cases where the error is fatal. This method is called when LOGGER_LogBasic() is called with fatal arg set.
+     * @param Event Logger event
+     * @return 0 -> OK\n 1 -> ERROR
+     */
+    void (*on_fatal_basic)();
 
     /**
      * @brief Setup peripherals required for logger to function properly. This method is called inside LOGGER_Init()
@@ -91,7 +98,7 @@ typedef struct {
 
 void LOGGER_RegisterCB(LOGGER_CallbacksTypeDef *Callbacks);
 void LOGGER_InitBasic();
-void LOGGER_LogBasic();
+void LOGGER_LogBasic(uint8_t Fatal);
 
 LOGGER_ErrorTypeDef LOGGER_Init();
 LOGGER_ErrorTypeDef LOGGER_DeInit();
@@ -109,4 +116,4 @@ LOGGER_ErrorTypeDef LOGGER_SetLevel(LOGGER_LevelTypeDef Level);
 
 char *LOGGER_GetLevelLabel(LOGGER_LevelTypeDef Level);
 
-#endif //LOG_H
+#endif //STM32_LOG_H

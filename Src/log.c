@@ -7,8 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "esp_log.h"
-
 static LOGGER_TypeDef gHLogger;
 
 uint8_t default_formatter(LOGGER_EventTypeDef *Event, char *Buffer, uint16_t Len);
@@ -37,9 +35,18 @@ void LOGGER_InitBasic() {
  * @brief This method calls ONLY the LOGGER_LogBasicCB() which should never return error.
  *        This ensures that there will be some sign of error even if more complex peripherals are still not running.
  */
-void LOGGER_LogBasic() {
-    if (gHLogger.Callbacks.on_log_basic != NULL) {
-        gHLogger.Callbacks.on_log_basic();
+void LOGGER_LogBasic(uint8_t Fatal) {
+    if (!gHLogger.Initialized) return;
+    if (!gHLogger.Enabled) return;
+
+    if (Fatal) {
+        if (gHLogger.Callbacks.on_fatal_basic != NULL) {
+            gHLogger.Callbacks.on_fatal_basic();
+        }
+    } else {
+        if (gHLogger.Callbacks.on_log_basic != NULL) {
+            gHLogger.Callbacks.on_log_basic();
+        }
     }
 }
 
