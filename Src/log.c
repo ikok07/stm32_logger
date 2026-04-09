@@ -5,6 +5,7 @@
 #include "log.h"
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 
 static LOGGER_TypeDef gHLogger;
@@ -94,7 +95,12 @@ LOGGER_ErrorTypeDef LOGGER_Log(LOGGER_LevelTypeDef Level, char *Msg) {
         .msg = Msg
     };
     if (gHLogger.Callbacks.optional_on_format == NULL) {
-        if (default_formatter(&event, formatted_msg, sizeof(formatted_msg)) != 0) return LOGGER_ERROR_IMPLEMENTATION;
+        if (default_formatter(&event, formatted_msg, sizeof(formatted_msg)) != 0) {
+            if (Level == LOGGER_LEVEL_FATAL) {
+                LOGGER_LogBasic(1);
+            }
+            return LOGGER_ERROR_IMPLEMENTATION;
+        }
     } else {
         if (gHLogger.Callbacks.optional_on_format(&event, formatted_msg, sizeof(formatted_msg)) != 0) return LOGGER_ERROR_IMPLEMENTATION;
     }
@@ -102,7 +108,10 @@ LOGGER_ErrorTypeDef LOGGER_Log(LOGGER_LevelTypeDef Level, char *Msg) {
     event.msg = formatted_msg;
 
     if (Level == LOGGER_LEVEL_FATAL) {
-        if (gHLogger.Callbacks.on_fatal_err != NULL && gHLogger.Callbacks.on_fatal_err(&event) != 0) return LOGGER_ERROR_IMPLEMENTATION;
+        if (gHLogger.Callbacks.on_fatal_err != NULL && gHLogger.Callbacks.on_fatal_err(&event) != 0) {
+            LOGGER_LogBasic(1);
+            return LOGGER_ERROR_IMPLEMENTATION;
+        }
     } else {
         if (gHLogger.Callbacks.on_log != NULL && gHLogger.Callbacks.on_log(&event) != 0) return LOGGER_ERROR_IMPLEMENTATION;
     }
